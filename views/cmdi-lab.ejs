@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Command Injection Lab</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back-link">← Quay lại</a>
+            <h1>🌐 Command Injection Lab</h1>
+            <p class="subtitle">Thực hành kỹ thuật tấn công Command Injection</p>
+        </header>
+
+        <main class="lab-content">
+            <div class="info-box">
+                <h3>📋 Mục tiêu</h3>
+                <ul>
+                    <li>Ping đến địa chỉ IP hoặc domain</li>
+                    <li>Phát hiện lỗ hổng Command Injection</li>
+                    <li>Khai thác để thực thi lệnh hệ thống</li>
+                    <li>Đọc file bí mật trên server</li>
+                </ul>
+            </div>
+
+            <div class="search-section">
+                <h2>Ping Network Tool</h2>
+                <p style="color: #666; margin-bottom: 15px;">Nhập địa chỉ IP hoặc domain để kiểm tra kết nối mạng</p>
+                <div class="search-box">
+                    <input type="text" id="ipInput" placeholder="Ví dụ: 8.8.8.8 hoặc google.com" />
+                    <button id="pingBtn">🔍 Ping</button>
+                </div>
+            </div>
+
+            <div id="commandDisplay" class="query-display" style="display: none;">
+                <strong>Command thực thi:</strong>
+                <code id="commandText"></code>
+            </div>
+
+            <div id="results" class="results-section">
+                <!-- Kết quả sẽ hiển thị ở đây -->
+            </div>
+
+            <div class="hints-box">
+                <h3>💡 Gợi ý</h3>
+                <details>
+                    <summary>Gợi ý 1: Command Chaining</summary>
+                    <p>Trong Linux/Unix, bạn có thể nối nhiều lệnh bằng các ký tự như <code>;</code>, <code>&&</code>,
+                        <code>||</code>, hoặc <code>|</code></p>
+                </details>
+                <details>
+                    <summary>Gợi ý 2: Thực thi lệnh bổ sung</summary>
+                    <p>Thử: <code>8.8.8.8; ls -la</code> để liệt kê file trong thư mục hiện tại</p>
+                </details>
+                <details>
+                    <summary>Gợi ý 3: Đọc file hệ thống</summary>
+                    <p>Thử: <code>8.8.8.8; cat /etc/passwd</code> hoặc <code>8.8.8.8 && whoami</code></p>
+                </details>
+                <details>
+                    <summary>Gợi ý 4: Đọc file bí mật</summary>
+                    <p>Có một file <code>secret.txt</code> trong thư mục dự án. Thử:
+                        <code>8.8.8.8; cat secret.txt</code></p>
+                </details>
+                <details>
+                    <summary>Gợi ý 5: Payload nâng cao</summary>
+                    <p>Sử dụng <code>$(command)</code> hoặc <code>`command`</code> để thực thi lệnh con</p>
+                    <p>Ví dụ: <code>8.8.8.8; echo "Current user: $(whoami)"</code></p>
+                </details>
+            </div>
+
+            <div class="info-box" style="background: #fff3cd; border-left-color: #ffc107; margin-top: 20px;">
+                <h3>⚠️ Cách phòng chống</h3>
+                <ul>
+                    <li><strong>KHÔNG</strong> sử dụng <code>exec()</code>, <code>system()</code> với user input</li>
+                    <li>Sử dụng <code>execFile()</code> thay vì <code>exec()</code></li>
+                    <li>Validate và whitelist input (chỉ cho phép IP/domain hợp lệ)</li>
+                    <li>Sử dụng thư viện chuyên dụng thay vì gọi command trực tiếp</li>
+                </ul>
+            </div>
+        </main>
+
+        <footer>
+            <p>⚠️ Đây là môi trường thực hành - Command không được filter</p>
+        </footer>
+    </div>
+
+    <script>
+        const ipInput = document.getElementById('ipInput');
+        const pingBtn = document.getElementById('pingBtn');
+        const resultsDiv = document.getElementById('results');
+        const commandDisplay = document.getElementById('commandDisplay');
+        const commandText = document.getElementById('commandText');
+
+        function performPing() {
+            const ip = ipInput.value.trim();
+
+            if (!ip) {
+                resultsDiv.innerHTML = '<p class="no-results">Vui lòng nhập địa chỉ IP hoặc domain</p>';
+                return;
+            }
+
+            fetch('/api/ping', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ip: ip })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    // Hiển thị command
+                    commandDisplay.style.display = 'block';
+                    commandText.textContent = data.command;
+
+                    // Hiển thị kết quả
+                    if (data.error) {
+                        resultsDiv.innerHTML = `
+                            <div class="error-box">
+                                <h3>❌ Lỗi thực thi</h3>
+                                <pre>${data.error}</pre>
+                                ${data.output ? `<pre>${data.output}</pre>` : ''}
+                            </div>
+                        `;
+                    } else if (data.output) {
+                        resultsDiv.innerHTML = `
+                            <h3>Kết quả:</h3>
+                            <div class="command-output">
+                                <pre>${data.output}</pre>
+                            </div>
+                        `;
+                    } else {
+                        resultsDiv.innerHTML = '<p class="no-results">Không có kết quả</p>';
+                    }
+                })
+                .catch(err => {
+                    resultsDiv.innerHTML = `<div class="error-box">Lỗi: ${err.message}</div>`;
+                });
+        }
+
+        pingBtn.addEventListener('click', performPing);
+        ipInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performPing();
+        });
+    </script>
+</body>
+
+</html>

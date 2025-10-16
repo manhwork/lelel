@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Authentication Bypass Lab</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back-link">← Quay lại</a>
+            <h1>🔓 Authentication Bypass Lab</h1>
+            <p class="subtitle">Thực hành kỹ thuật vượt qua xác thực</p>
+        </header>
+
+        <main class="lab-content">
+            <div class="info-box">
+                <h3>📋 Mục tiêu</h3>
+                <ul>
+                    <li>Đăng nhập vào hệ thống với tài khoản hợp lệ</li>
+                    <li>Phát hiện lỗ hổng trong cách lưu cookie xác thực</li>
+                    <li>Bypass authentication để đăng nhập với tài khoản admin</li>
+                    <li>Đọc comment bí mật của admin</li>
+                </ul>
+            </div>
+
+            <% if (!authenticated) { %>
+                <!-- Login Form -->
+                <div class="auth-section">
+                    <h2>Đăng Nhập</h2>
+                    <div class="login-box">
+                        <form id="loginForm">
+                            <div class="form-group">
+                                <label for="username">Tên đăng nhập:</label>
+                                <input type="text" id="username" name="username" placeholder="Nhập username" required />
+                            </div>
+                            <div class="form-group">
+                                <label for="password">Mật khẩu:</label>
+                                <input type="password" id="password" name="password" placeholder="Nhập password"
+                                    required />
+                            </div>
+                            <button type="submit" class="btn">🔐 Đăng nhập</button>
+                        </form>
+                        <div id="loginMessage"></div>
+                    </div>
+
+                    <div class="credentials-hint">
+                        <h4>💡 Tài khoản test:</h4>
+                        <p><code>user1 / password1</code></p>
+                        <p><code>user2 / password2</code></p>
+                        <p style="color: #999; font-size: 0.9em;">Tài khoản admin: ??? (Tự tìm hiểu)</p>
+                    </div>
+                </div>
+                <% } else { %>
+                    <!-- Authenticated Area -->
+                    <div class="auth-section">
+                        <div class="welcome-box">
+                            <h2>Chào mừng, <%= username %>!</h2>
+                            <p>Bạn đã đăng nhập thành công vào hệ thống.</p>
+                            <button id="logoutBtn" class="btn btn-secondary">🚪 Đăng xuất</button>
+                        </div>
+
+                        <!-- Comments Section -->
+                        <div class="comments-section">
+                            <h2>💬 Bảng Tin</h2>
+
+                            <div class="comment-form">
+                                <textarea id="commentInput" placeholder="Viết comment của bạn..." rows="3"></textarea>
+                                <button id="postCommentBtn" class="btn">📝 Gửi Comment</button>
+                            </div>
+
+                            <div id="commentsList" class="comments-list">
+                                <% comments.forEach(comment=> { %>
+                                    <div
+                                        class="comment-item <%= comment.username === 'admin' ? 'admin-comment' : '' %>">
+                                        <div class="comment-header">
+                                            <strong>
+                                                <%= comment.username %>
+                                            </strong>
+                                            <span class="comment-time">
+                                                <%= new Date(comment.created_at).toLocaleString('vi-VN') %>
+                                            </span>
+                                        </div>
+                                        <!-- KHÔNG AN TOÀN - Render HTML thô, có lỗ hổng XSS -->
+                                        <div class="comment-body">
+                                            <%- comment.comment %>
+                                        </div>
+                                    </div>
+                                    <% }); %>
+                            </div>
+                        </div>
+                    </div>
+                    <% } %>
+
+                        <div class="hints-box">
+                            <h3>💡 Gợi ý</h3>
+                            <details>
+                                <summary>Gợi ý 1: Kiểm tra Cookie</summary>
+                                <p>Sau khi đăng nhập, mở DevTools (F12) và kiểm tra tab <strong>Application >
+                                        Cookies</strong></p>
+                            </details>
+                            <details>
+                                <summary>Gợi ý 2: Phân tích Cookie</summary>
+                                <p>Cookie có tên <code>auth</code> với giá trị có dạng gì? Có thể đọc được không?</p>
+                            </details>
+                            <details>
+                                <summary>Gợi ý 3: Giả mạo Cookie</summary>
+                                <p>Thử thay đổi giá trị cookie thành <code>admin:admin123</code> trong DevTools</p>
+                            </details>
+                            <details>
+                                <summary>Gợi ý 4: Lấy FLAG</summary>
+                                <p>Sau khi đăng nhập với tài khoản admin, tìm comment chứa FLAG từ admin</p>
+                            </details>
+                            <details>
+                                <summary>Gợi ý 5: Stored XSS Attack (Nâng cao)</summary>
+                                <p>Thử post comment với script:
+                                    <code>&lt;script&gt;alert(document.cookie)&lt;/script&gt;</code></p>
+                            </details>
+                            <details>
+                                <summary>Gợi ý 6: Session Hijacking (Nâng cao)</summary>
+                                <p>Payload để đánh cắp cookie của admin:<br>
+                                    <code>&lt;script&gt;fetch('/api/steal?cookie='+document.cookie)&lt;/script&gt;</code>
+                                </p>
+                            </details>
+                        </div>
+
+                        <div class="info-box"
+                            style="background: #fff3cd; border-left-color: #ffc107; margin-top: 20px;">
+                            <h3>⚠️ Lỗ hổng</h3>
+                            <ul>
+                                <li><strong>Authentication:</strong> Cookie lưu <code>username:password</code> dạng
+                                    plaintext</li>
+                                <li><strong>Cookie Security:</strong> <code>httpOnly: false</code> → có thể đọc/sửa bằng
+                                    JavaScript</li>
+                                <li><strong>Session:</strong> Không mã hóa cookie, không verify session</li>
+                                <li><strong>XSS:</strong> Comment không sanitize → Stored XSS</li>
+                                <li><strong>Impact:</strong> Attacker có thể đánh cắp cookie của admin</li>
+                            </ul>
+                        </div>
+        </main>
+
+        <footer>
+            <p>⚠️ Đây là môi trường thực hành - Cookie không được bảo mật</p>
+        </footer>
+    </div>
+
+    <script>
+        // Login Form
+        const loginForm = document.getElementById('loginForm');
+        const loginMessage = document.getElementById('loginMessage');
+
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+
+                const username = document.getElementById('username').value;
+                const password = document.getElementById('password').value;
+
+                try {
+                    const response = await fetch('/api/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username, password })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        loginMessage.innerHTML = '<div class="success-box">✅ Đăng nhập thành công! Đang chuyển hướng...</div>';
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        loginMessage.innerHTML = `<div class="error-box">❌ ${data.error}</div>`;
+                    }
+                } catch (err) {
+                    loginMessage.innerHTML = `<div class="error-box">Lỗi: ${err.message}</div>`;
+                }
+            });
+        }
+
+        // Logout
+        const logoutBtn = document.getElementById('logoutBtn');
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', async () => {
+                await fetch('/api/logout', { method: 'POST' });
+                location.reload();
+            });
+        }
+
+        // Post Comment
+        const postCommentBtn = document.getElementById('postCommentBtn');
+        if (postCommentBtn) {
+            postCommentBtn.addEventListener('click', async () => {
+                const comment = document.getElementById('commentInput').value.trim();
+
+                if (!comment) {
+                    alert('Vui lòng nhập comment!');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/comment', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ comment })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        location.reload();
+                    } else {
+                        alert('Lỗi: ' + data.error);
+                    }
+                } catch (err) {
+                    alert('Lỗi: ' + err.message);
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

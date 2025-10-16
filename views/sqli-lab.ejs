@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Injection Lab</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <a href="/" class="back-link">← Quay lại</a>
+            <h1>💉 SQL Injection Lab</h1>
+            <p class="subtitle">Thực hành kỹ thuật tấn công SQL Injection</p>
+        </header>
+
+        <main class="lab-content">
+            <div class="info-box">
+                <h3>📋 Mục tiêu</h3>
+                <ul>
+                    <li>Tìm kiếm các bài viết theo tiêu đề</li>
+                    <li>Phát hiện lỗ hổng SQL Injection</li>
+                    <li>Khai thác để lấy thông tin từ các bảng khác</li>
+                    <li>Tìm flag bí mật trong database</li>
+                </ul>
+            </div>
+
+            <div class="search-section">
+                <h2>Tìm Kiếm Bài Viết</h2>
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Nhập từ khóa để tìm kiếm..." />
+                    <button id="searchBtn">🔍 Tìm kiếm</button>
+                </div>
+            </div>
+
+            <div id="queryDisplay" class="query-display" style="display: none;">
+                <strong>Query SQL thực thi:</strong>
+                <code id="queryText"></code>
+            </div>
+
+            <div id="results" class="results-section">
+                <h3>Danh Sách Bài Viết:</h3>
+                <div class="results-grid">
+                    <% posts.forEach(post=> { %>
+                        <div class="result-item">
+                            <div class="result-id">ID: <%= post.id %>
+                            </div>
+                            <div class="result-title">
+                                <%= post.title %>
+                            </div>
+                        </div>
+                        <% }); %>
+                </div>
+            </div>
+
+            <div class="hints-box">
+                <h3>💡 Gợi ý</h3>
+                <details>
+                    <summary>Gợi ý 1: Kiểm tra lỗ hổng</summary>
+                    <p>Thử nhập dấu ngoặc đơn <code>'</code> vào ô tìm kiếm xem có lỗi gì không</p>
+                </details>
+                <details>
+                    <summary>Gợi ý 2: Union-based SQL Injection</summary>
+                    <p>Sử dụng <code>UNION SELECT</code> để kết hợp kết quả từ các bảng khác</p>
+                </details>
+                <details>
+                    <summary>Gợi ý 3: Khám phá cấu trúc</summary>
+                    <p>SQLite có bảng hệ thống <code>sqlite_master</code> chứa thông tin về các bảng</p>
+                </details>
+                <details>
+                    <summary>Gợi ý 4: Payload mẫu</summary>
+                    <p>Thử: <code>' UNION SELECT id, flag FROM secret--</code></p>
+                </details>
+            </div>
+        </main>
+
+        <footer>
+            <p>⚠️ Đây là môi trường thực hành - Query SQL không được filter</p>
+        </footer>
+    </div>
+
+    <script>
+        const searchInput = document.getElementById('searchInput');
+        const searchBtn = document.getElementById('searchBtn');
+        const resultsDiv = document.getElementById('results');
+        const queryDisplay = document.getElementById('queryDisplay');
+        const queryText = document.getElementById('queryText');
+
+        function performSearch() {
+            const query = searchInput.value;
+
+            fetch(`/api/search?q=${encodeURIComponent(query)}`)
+                .then(res => res.json())
+                .then(data => {
+                    // Hiển thị query SQL
+                    queryDisplay.style.display = 'block';
+                    queryText.textContent = data.query;
+
+                    // Hiển thị kết quả
+                    if (data.error) {
+                        resultsDiv.innerHTML = `
+                            <div class="error-box">
+                                <h3>❌ Lỗi SQL</h3>
+                                <pre>${data.error}</pre>
+                            </div>
+                        `;
+                    } else if (data.results && data.results.length > 0) {
+                        let html = '<h3>Kết quả tìm kiếm:</h3><div class="results-grid">';
+                        data.results.forEach(item => {
+                            html += `
+                                <div class="result-item">
+                                    <div class="result-id">ID: ${item.id}</div>
+                                    <div class="result-title">${item.title}</div>
+                                </div>
+                            `;
+                        });
+                        html += '</div>';
+                        resultsDiv.innerHTML = html;
+                    } else {
+                        resultsDiv.innerHTML = '<p class="no-results">Không tìm thấy kết quả nào</p>';
+                    }
+                })
+                .catch(err => {
+                    resultsDiv.innerHTML = `<div class="error-box">Lỗi: ${err.message}</div>`;
+                });
+        }
+
+        searchBtn.addEventListener('click', performSearch);
+        searchInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') performSearch();
+        });
+    </script>
+</body>
+
+</html>

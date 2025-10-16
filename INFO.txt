@@ -1,0 +1,113 @@
+╔══════════════════════════════════════════════════════════════╗
+║         🔐 SECURITY LAB - WEB SECURITY PRACTICE             ║
+╚══════════════════════════════════════════════════════════════╝
+
+📌 SERVER: http://localhost:3000
+
+┌─ TRANG CHỦ (/)
+│  └─ Hiển thị danh sách lab
+│  
+├─ LAB 1: SQL INJECTION (/lab/sqli)
+│  ├─ ✅ Hiển thị TẤT CẢ title từ bảng posts (5 bài)
+│  ├─ ✅ Thanh tìm kiếm (có lỗ hổng SQL injection)
+│  ├─ ✅ Hiển thị query SQL đang chạy
+│  └─ 🚩 FLAG: FLAG{SQL_1nj3ct10n_M4st3r}
+│
+├─ LAB 2: COMMAND INJECTION (/lab/cmdi)
+│  ├─ ✅ Công cụ ping network
+│  ├─ ✅ Command không được filter (có lỗ hổng)
+│  ├─ ✅ Hiển thị command đang thực thi
+│  ├─ ✅ File secret.txt để khai thác
+│  └─ 🚩 FLAG: FLAG{C0mm4nd_1nj3ct10n_M4st3r_2024}
+│
+└─ LAB 3: AUTHENTICATION BYPASS (/lab/auth)
+   ├─ ✅ Hệ thống login với cookie
+   ├─ ✅ Cookie lưu username:password (plaintext)
+   ├─ ✅ Bảng tin comments
+   ├─ ✅ Bypass để đăng nhập admin
+   └─ 🚩 FLAG: FLAG{4uth_Byp4ss_C00k13_H4ck}
+
+═══════════════════════════════════════════════════════════════
+
+📊 DATABASE (SQLite - lab.db)
+
+┌─ BẢNG posts (5 bài viết)
+│  ├─ ID: 1 | Chào mừng đến với Security Lab
+│  ├─ ID: 2 | SQL Injection là gì?
+│  ├─ ID: 3 | Bảo mật web căn bản
+│  ├─ ID: 4 | OWASP Top 10
+│  └─ ID: 5 | Cross-Site Scripting (XSS)
+│
+├─ BẢNG users (3 users)
+│  ├─ admin / admin123 / admin@lab.local
+│  ├─ user1 / password1 / user1@lab.local
+│  └─ user2 / password2 / user2@lab.local
+│
+├─ BẢNG secret (1 flag SQL Injection)
+│  └─ FLAG{SQL_1nj3ct10n_M4st3r}
+│
+└─ BẢNG comments (4 comments)
+   ├─ admin: Chào mừng đến với hệ thống!
+   ├─ admin: 🚩 FLAG: FLAG{4uth_Byp4ss_C00k13_H4ck} ...
+   ├─ user1: Tính năng rất hay!
+   └─ user2: Mình đã đăng nhập thành công!
+
+═══════════════════════════════════════════════════════════════
+
+📁 FILE BÍ MẬT
+
+secret.txt → FLAG{C0mm4nd_1nj3ct10n_M4st3r_2024}
+
+═══════════════════════════════════════════════════════════════
+
+🎯 PAYLOAD MẪU
+
+┌─ SQL INJECTION
+│  ├─ Phát hiện: '
+│  ├─ Lấy flag: ' UNION SELECT id, flag FROM secret--
+│  └─ Lấy users: ' UNION SELECT username, password FROM users--
+│
+├─ COMMAND INJECTION
+│  ├─ Phát hiện: 8.8.8.8; whoami
+│  ├─ Lấy flag: 8.8.8.8; cat secret.txt
+│  └─ Liệt kê: 8.8.8.8; ls -la
+│
+└─ AUTHENTICATION BYPASS
+   ├─ Login: user1 / password1
+   ├─ Check cookie: F12 → Application → Cookies
+   └─ Bypass: Sửa cookie thành admin:admin123
+
+═══════════════════════════════════════════════════════════════
+
+📁 CẤU TRÚC DỰ ÁN
+
+lelel/
+├── 📄 server.js              ← Server Express (có lỗ hổng)
+├── 📄 package.json           ← Dependencies
+├── 🗄️ lab.db                 ← SQLite database
+├── 🚩 secret.txt             ← File bí mật (Command Injection)
+├── 📁 views/
+│   ├── index.ejs            ← Trang chủ
+│   ├── sqli-lab.ejs         ← Lab SQL Injection
+│   ├── cmdi-lab.ejs         ← Lab Command Injection
+│   └── auth-lab.ejs         ← Lab Authentication Bypass
+├── 📁 public/css/
+│   └── style.css            ← Giao diện
+└── 📁 docs/
+    ├── README.md            ← Tài liệu chính
+    ├── DEMO.md              ← Hướng dẫn SQL Injection
+    ├── CMDI-GUIDE.md        ← Hướng dẫn Command Injection
+    ├── AUTH-GUIDE.md        ← Hướng dẫn Authentication Bypass
+    ├── QUICKSTART.md        ← Bắt đầu nhanh
+    ├── CHANGELOG.md         ← Lịch sử thay đổi
+    └── INFO.txt             ← File này
+
+═══════════════════════════════════════════════════════════════
+
+⚠️  LƯU Ý
+
+• Đây là môi trường thực hành CÓ LỖ HỔNG CỐ TÌNH
+• KHÔNG sử dụng code này trong production
+• Chỉ dùng cho mục đích học tập
+
+═══════════════════════════════════════════════════════════════
