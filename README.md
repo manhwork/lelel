@@ -23,6 +23,7 @@ Dự án web để thực hành các kỹ thuật bảo mật và tấn công we
     -   Bảng tin comments với Stored XSS
     -   Bypass để đăng nhập admin
     -   Session Hijacking với XSS
+    -   **🌐 Chrome Auto-Login**: Tự động mở Chrome để đăng nhập admin khi phát hiện XSS
     -   Gợi ý và hướng dẫn bảo mật
 
 ## 🗄️ Cấu trúc Database
@@ -204,6 +205,8 @@ Xem comment của admin trong bảng tin
 **Hướng dẫn chi tiết:** Xem file `AUTH-GUIDE.md`
 
 **Kỹ thuật nâng cao:** Xem file `XSS-DEMO.md` để học cách kết hợp XSS với Session Hijacking
+
+**🌐 Chrome Auto-Login:** Xem file `CHROME-AUTO-GUIDE.md` để học về tính năng tự động mở Chrome
 
 ## ⚠️ Lưu ý Bảo mật
 

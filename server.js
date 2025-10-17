@@ -3,9 +3,13 @@ const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 const { exec } = require("child_process");
 const cookieParser = require("cookie-parser");
+const BrowserAutomation = require("./browser-automation");
 
 const app = express();
 const PORT = 3000;
+
+// Khởi tạo Browser Automation
+const browserAutomation = new BrowserAutomation();
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -358,6 +362,75 @@ app.post("/api/comment", (req, res) => {
 
             const commentId = this.lastID;
             res.json({ success: true, commentId: commentId });
+
+            // CHROME-AUTO: Tự động mở Chrome để đăng nhập admin và trigger XSS
+            console.log(
+                "🚀 [CHROME-AUTO] Phát hiện comment mới, chuẩn bị mở Chrome..."
+            );
+
+            // Kiểm tra xem comment có chứa XSS payload không
+            const hasXSSPayload =
+                comment.includes("<script") ||
+                comment.includes("<img") ||
+                comment.includes("<svg") ||
+                comment.includes("onerror") ||
+                comment.includes("javascript:");
+
+            if (hasXSSPayload) {
+                console.log(
+                    "🎯 [CHROME-AUTO] XSS payload detected! Sẽ mở Chrome sau 3 giây..."
+                );
+
+                setTimeout(async () => {
+                    try {
+                        console.log(
+                            "🌐 [CHROME-AUTO] Đang mở Chrome browser..."
+                        );
+
+                        const success =
+                            await browserAutomation.autoLoginAdminAndViewComments(
+                                `http://localhost:${PORT}`
+                            );
+
+                        if (success) {
+                            console.log(
+                                "✅ [CHROME-AUTO] Chrome automation hoàn thành!"
+                            );
+
+                            // Chụp screenshot để debug
+                            await browserAutomation.takeScreenshot(
+                                `xss-attack-${Date.now()}.png`
+                            );
+
+                            // Đợi 5 giây rồi đóng browser
+                            setTimeout(async () => {
+                                await browserAutomation.close();
+                                console.log("🔒 [CHROME-AUTO] Browser đã đóng");
+                            }, 5000);
+                        } else {
+                            console.log(
+                                "❌ [CHROME-AUTO] Chrome automation thất bại"
+                            );
+                        }
+                    } catch (error) {
+                        console.error("❌ [CHROME-AUTO] Lỗi:", error.message);
+
+                        // Đóng browser nếu có lỗi
+                        try {
+                            await browserAutomation.close();
+                        } catch (closeError) {
+                            console.error(
+                                "❌ [CHROME-AUTO] Lỗi đóng browser:",
+                                closeError.message
+                            );
+                        }
+                    }
+                }, 3000); // Đợi 3 giây trước khi mở Chrome
+            } else {
+                console.log(
+                    "ℹ️ [CHROME-AUTO] Comment không chứa XSS payload, bỏ qua Chrome automation"
+                );
+            }
         }
     );
 });
@@ -417,6 +490,40 @@ app.post("/api/ping", (req, res) => {
 });
 
 // Khởi động server
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
     console.log(`Server đang chạy tại http://localhost:${PORT}`);
+    console.log("🚀 Chrome Auto-Login feature đã sẵn sàng!");
+});
+
+// Graceful shutdown - đóng browser khi server dừng
+process.on("SIGINT", async () => {
+    console.log("\n🛑 [CHROME-AUTO] Đang dừng server...");
+
+    try {
+        await browserAutomation.close();
+        console.log("✅ [CHROME-AUTO] Browser đã đóng");
+    } catch (error) {
+        console.error("❌ [CHROME-AUTO] Lỗi đóng browser:", error.message);
+    }
+
+    server.close(() => {
+        console.log("🔒 Server đã dừng");
+        process.exit(0);
+    });
+});
+
+process.on("SIGTERM", async () => {
+    console.log("\n🛑 [CHROME-AUTO] Đang dừng server...");
+
+    try {
+        await browserAutomation.close();
+        console.log("✅ [CHROME-AUTO] Browser đã đóng");
+    } catch (error) {
+        console.error("❌ [CHROME-AUTO] Lỗi đóng browser:", error.message);
+    }
+
+    server.close(() => {
+        console.log("🔒 Server đã dừng");
+        process.exit(0);
+    });
 });
